@@ -29,7 +29,7 @@ function getAdminTestUser(): BasicAuthCredentials {
     const password = process.env.E2E_ADMIN_PASSWORD;
 
     if (!username || !password) {
-        throw new Error("E2E_ADMIN_USERNAME and E2E_ADMIN_PASSWORD must be set for team creation helpers.");
+        throw new Error("E2E_ADMIN_USERNAME and E2E_ADMIN_PASSWORD must be set for E2E API write helpers.");
     }
 
     return { username, password };

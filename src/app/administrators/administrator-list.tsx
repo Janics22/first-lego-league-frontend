@@ -53,6 +53,9 @@ export default function AdministratorList({
       <ul className="list-grid">
         {administrators.map((administrator) => {
           const isSelf = administrator.username === currentUsername;
+          const deleteLabel = isSelf
+            ? "You cannot delete your own account"
+            : `Delete ${administrator.username}`;
 
           return (
             <li key={administrator.username} className="list-card pl-7">
@@ -89,16 +92,8 @@ export default function AdministratorList({
                   size="sm"
                   disabled={isSelf}
                   aria-disabled={isSelf}
-                  title={
-                    isSelf
-                      ? "You cannot delete your own account"
-                      : `Delete ${administrator.username}`
-                  }
-                  aria-label={
-                    isSelf
-                      ? "You cannot delete your own account"
-                      : `Delete ${administrator.username}`
-                  }
+                  title={deleteLabel}
+                  aria-label={deleteLabel}
                   onClick={() => setAdminToDelete(administrator)}
                 >
                   <Trash2 aria-hidden="true" />
