@@ -25,64 +25,30 @@ export class TeamsService {
     constructor(private readonly authStrategy: AuthStrategy) {}
 
     async getTeams(): Promise<Team[]> {
-        return fetchHalCollection<Team>(
-            "/teams",
-            this.authStrategy,
-            "teams"
-        );
+        return fetchHalCollection<Team>("/teams", this.authStrategy, "teams");
     }
 
     async getTeamById(id: string): Promise<Team> {
         const teamId = getSafeEncodedId(id);
-
-        return fetchHalResource<Team>(
-            `/teams/${teamId}`,
-            this.authStrategy
-        );
+        return fetchHalResource<Team>(`/teams/${teamId}`, this.authStrategy);
     }
 
     async getTeamCoach(id: string): Promise<User[]> {
         const teamId = getSafeEncodedId(id);
-
-        return fetchHalCollection<User>(
-            `/teams/${teamId}/trainedBy`,
-            this.authStrategy,
-            "coaches"
-        );
+        return fetchHalCollection<User>(`/teams/${teamId}/trainedBy`, this.authStrategy, "coaches");
     }
 
     async getTeamMembers(teamId: string): Promise<any[]> {
         const safeId = getSafeEncodedId(teamId);
-
-        // 1. Pedimos la lista general (el JSON que me pasaste)
-        const members = await fetchHalCollection<any>(
-            `/teamMembers?page=0&size=50`,
+        return fetchHalCollection<any>(
+            `/teams/${safeId}/members`,
             this.authStrategy,
             "teamMembers"
         );
-
-        // 2. Filtramos en el cliente
-        return members.filter(m => {
-            const teamHref = m._links?.team?.href;
-            if (!teamHref) return false;
-
-            /**
-             * IMPORTANTE: 
-             * Según tu JSON, el link es "teamMembers/{memberId}/team".
-             * Para que este filtro funcione, necesitamos saber si ese link
-             * pertenece a tu equipo. 
-             * * Si la API no te da el ID del equipo en el miembro, 
-             * este filtrado manual solo funcionará si comparas contra una URL 
-             * que ya conozcas o si la API expande el equipo.
-             */
-            
-            // Si el link del equipo contiene el ID del equipo, esto funcionará:
-            return teamHref.includes(`/teams/${safeId}`);
-        });
     }
+
     async addTeamMember(teamId: string, data: AddMemberPayload): Promise<any> {
         const safeId = getSafeEncodedId(teamId);
-
         return createHalResource<any>(
             "/teamMembers",
             {
