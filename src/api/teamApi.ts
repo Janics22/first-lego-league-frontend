@@ -1,22 +1,31 @@
 import type { AuthStrategy } from "@/lib/authProvider";
 import { Team } from "@/types/team";
 import { User } from "@/types/user";
-import { deleteHal, fetchHalCollection, fetchHalResource } from "./halClient";
+import {
+    fetchHalCollection,
+    fetchHalResource,
+    createHalResource,
+    deleteHal
+} from "./halClient";
 
 function getSafeEncodedId(id: string): string {
     try {
-        // HAL links may already contain encoded ids, so normalize before reusing them.
         return encodeURIComponent(decodeURIComponent(id));
     } catch {
         return encodeURIComponent(id);
     }
 }
 
+export interface AddMemberPayload {
+    name: string;
+    role: string;
+}
+
 export class TeamsService {
-    constructor(private readonly authStrategy: AuthStrategy) { }
+    constructor(private readonly authStrategy: AuthStrategy) {}
 
     async getTeams(): Promise<Team[]> {
-        return fetchHalCollection<Team>('/teams', this.authStrategy, 'teams');
+        return fetchHalCollection<Team>("/teams", this.authStrategy, "teams");
     }
 
     async getTeamById(id: string): Promise<Team> {
@@ -26,16 +35,43 @@ export class TeamsService {
 
     async getTeamCoach(id: string): Promise<User[]> {
         const teamId = getSafeEncodedId(id);
-        return fetchHalCollection<User>(`/teams/${teamId}/trainedBy`, this.authStrategy, 'coaches');
+        return fetchHalCollection<User>(`/teams/${teamId}/trainedBy`, this.authStrategy, "coaches");
     }
 
-    async getTeamMembers(id: string): Promise<User[]> {
-        const teamId = getSafeEncodedId(id);
-        return fetchHalCollection<User>(`/teams/${teamId}/members`, this.authStrategy, 'teamMembers');
+    async getTeamMembers(teamId: string): Promise<unknown[]> {
+        const safeId = getSafeEncodedId(teamId);
+        return fetchHalCollection<unknown>(
+            `/teams/${safeId}/members`,
+            this.authStrategy,
+            "teamMembers"
+        );
     }
+
+    async addTeamMember(teamId: string, data: AddMemberPayload): Promise<User> {
+        const safeId = getSafeEncodedId(teamId);
+        return createHalResource<User>(
+            "/teamMembers",
+            {
+                name: data.name.trim(),
+                role: data.role,
+                birthDate: "2010-01-01",
+                gender: "MALE",
+                tShirtSize: "M",
+                team: `/teams/${safeId}`
+            },
+            this.authStrategy,
+            "teamMembers"
+        );
+    }
+
+
 
     async deleteTeam(id: string): Promise<void> {
         const teamId = getSafeEncodedId(id);
         await deleteHal(`/teams/${teamId}`, this.authStrategy);
+    }
+
+    async removeTeamMember(memberUri: string): Promise<void> {
+        await deleteHal(memberUri, this.authStrategy);
     }
 }
