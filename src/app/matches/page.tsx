@@ -122,7 +122,7 @@ export default async function MatchesPage({ searchParams }: Readonly<{ searchPar
             const editionsService = new EditionsService(serverAuthProvider);
             const edition = await editionsService.getEditionByYear(year);
 
-            if (edition && edition.uri) {
+            if (edition?.uri) {
                 response = await service.getMatchesByEdition(edition.uri + "/matches");
             } else {
                 response = [];

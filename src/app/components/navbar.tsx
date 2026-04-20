@@ -1,12 +1,11 @@
 "use client";
 
-import { Suspense } from "react";
 import { useAuth } from "@/app/components/authentication";
 import EditionSelector from "@/app/components/edition-selector";
 import Loginbar from "@/app/components/loginbar";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { Suspense, useState } from "react";
 
 export default function Navbar() {
     const pathname = usePathname();
@@ -14,7 +13,7 @@ export default function Navbar() {
     const currentYear = searchParams.get("year");
     const { user } = useAuth();
     const [isDark, setIsDark] = useState(() => {
-        if (typeof window === 'undefined') return false;
+        if (globalThis.window === undefined) return false;
         return localStorage.getItem('theme') === 'dark';
     });
 
@@ -68,9 +67,7 @@ export default function Navbar() {
                             const active = href === "/"
                                 ? pathname === "/"
                                 : pathname === href || pathname.startsWith(`${href}/`);
-                            const hrefWithYear = href === "/"
-                                ? href
-                                : currentYear
+                            const hrefWithYear = currentYear
                                     ? `${href}?year=${encodeURIComponent(currentYear)}`
                                     : href;
                             return (

@@ -104,7 +104,7 @@ export default function EditProfileForm({ userId, currentEmail }: EditProfileFor
                                 const parts = value.split("@");
                                 if (parts.length !== 2) return "Invalid email address";
                                 const [local, domain] = parts;
-                                if (!local || !domain || !domain.includes(".")) return "Invalid email address";
+                                if (!local || !domain?.includes(".")) return "Invalid email address";
                                 return true;
                             },
                         })}

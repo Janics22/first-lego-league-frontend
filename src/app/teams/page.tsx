@@ -4,10 +4,10 @@ import EmptyState from "@/app/components/empty-state";
 import ErrorAlert from "@/app/components/error-alert";
 import PageShell from "@/app/components/page-shell";
 import { serverAuthProvider } from "@/lib/authProvider";
+import { getEncodedResourceId } from "@/lib/halRoute";
 import { ApiError, parseErrorMessage } from "@/types/errors";
 import { Team } from "@/types/team";
 import Link from "next/link";
-import { getEncodedResourceId } from "@/lib/halRoute";
 
 export const dynamic = "force-dynamic";
 
@@ -79,7 +79,7 @@ export default async function TeamsPage({ searchParams }: Readonly<{ searchParam
             const editionsService = new EditionsService(serverAuthProvider);
             const edition = await editionsService.getEditionByYear(year);
 
-            if (edition && edition.uri) {
+            if (edition?.uri) {
                 teams = await service.getTeamsByEdition(edition.uri + "/teams");
             }
         } else {

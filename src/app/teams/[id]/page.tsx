@@ -1,12 +1,12 @@
 import { TeamsService } from "@/api/teamApi";
 import { UsersService } from "@/api/userApi";
-import ErrorAlert from "@/app/components/error-alert";
 import EmptyState from "@/app/components/empty-state";
+import ErrorAlert from "@/app/components/error-alert";
+import { TeamMembersManager } from "@/app/components/team-member-manager";
 import { serverAuthProvider } from "@/lib/authProvider";
+import { NotFoundError, parseErrorMessage } from "@/types/errors";
 import { Team } from "@/types/team";
 import { User } from "@/types/user";
-import { parseErrorMessage, NotFoundError } from "@/types/errors";
-import { TeamMembersManager } from "@/app/components/team-member-manager";
 
 interface TeamDetailPageProps {
     readonly params: Promise<{ id: string }>;
@@ -34,11 +34,14 @@ function extractTeamMembers(data: unknown): User[] {
         return !!obj && typeof obj === 'object' && '_embedded' in obj;
     };
 
-    const rawMembers: RawMember[] = Array.isArray(data)
-        ? data as RawMember[]
-        : isHalResponse(data)
-            ? data._embedded?.teamMembers ?? []
-            : [];
+    let rawMembers: RawMember[] = [];
+    if (Array.isArray(data)) {
+        rawMembers = data as RawMember[];
+    } else if (isHalResponse(data)) {
+        rawMembers = data._embedded?.teamMembers ?? [];
+    } else {
+        rawMembers = [];
+    }
 
     return rawMembers.map((m, index) => {
         const extractedId = m._links?.self?.href?.split('/').pop() || m.uri?.split('/').pop();
