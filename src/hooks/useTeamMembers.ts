@@ -4,9 +4,13 @@ import { TeamsService } from '@/api/teamApi';
 import { clientAuthProvider } from '@/lib/authProvider';
 import { MAX_TEAM_MEMBERS, TeamMember, TeamMemberSnapshot } from '@/types/team';
 
+function hasHalSelfLink(member: TeamMember | TeamMemberSnapshot): member is TeamMember {
+    return "link" in member && typeof member.link === "function";
+}
+
 function toTeamMemberSnapshot(member: TeamMember | TeamMemberSnapshot): TeamMemberSnapshot {
-    const selfHref = typeof (member as TeamMember).link === 'function'
-        ? (member as TeamMember).link("self")?.href
+    const selfHref = hasHalSelfLink(member)
+        ? member.link("self")?.href
         : undefined;
 
     return {

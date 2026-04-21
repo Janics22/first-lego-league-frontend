@@ -5,28 +5,22 @@ import EditionSelector from "@/app/components/edition-selector";
 import Loginbar from "@/app/components/loginbar";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 
 export default function Navbar() {
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const currentYear = searchParams.get("year");
     const { user } = useAuth();
-    const [isDark, setIsDark] = useState(() => {
-        if (globalThis.window === undefined) return false;
-        return localStorage.getItem('theme') === 'dark';
-    });
 
     function toggleTheme() {
         const html = document.documentElement
         if (html.classList.contains('dark')) {
             html.classList.remove('dark')
             localStorage.setItem('theme', 'light')
-            setIsDark(false)
         } else {
             html.classList.add('dark')
             localStorage.setItem('theme', 'dark')
-            setIsDark(true)
         }
     }
 

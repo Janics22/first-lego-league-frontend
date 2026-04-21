@@ -40,8 +40,11 @@ export function TeamMembersManager({ teamId, initialMembers, isCoach, isAdmin }:
             <ul className="space-y-2">
                 {members.map((m, index) => {
                     const memberUri = m.uri;
-                    const memberKey =
-                        memberUri ?? (m.id !== undefined ? String(m.id) : `member-${index}`);
+                    let memberKey = memberUri;
+
+                    if (memberKey === undefined) {
+                        memberKey = m.id !== undefined ? String(m.id) : `member-${index}`;
+                    }
 
                     return (
                         <li
