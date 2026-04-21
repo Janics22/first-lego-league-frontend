@@ -4,7 +4,7 @@ import { Match } from "@/types/match";
 import { Referee } from "@/types/referee";
 import { Round } from "@/types/round";
 import { Team } from "@/types/team";
-import { createHalResource, fetchHalCollection, fetchHalResource } from "./halClient";
+import { createHalResource, deleteHal, fetchHalCollection, fetchHalResource } from "./halClient";
 
 export type CreateMatchPayload = {
     startTime: string;
@@ -71,5 +71,10 @@ export class MatchesService {
 
     async createMatch(data: CreateMatchPayload): Promise<Match> {
         return createHalResource<Match>("/matches", data, this.authStrategy, "match");
+    }
+
+    async deleteMatch(id: string): Promise<void> {
+        const matchId = encodeURIComponent(id);
+        await deleteHal(`/matches/${matchId}`, this.authStrategy);
     }
 }
