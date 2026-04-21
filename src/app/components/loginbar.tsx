@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 function hasAuthCookie(): boolean {
+    if (typeof document === "undefined") return false;
     return new RegExp(`(?:^|;\\s*)${AUTH_COOKIE_NAME}=([^;]+)`).test(
         document.cookie
     );
@@ -22,11 +23,11 @@ export default function Loginbar() {
     const router = useRouter();
     const { user, setUser } = useAuth();
 
-    const [mounted, setMounted] = useState(false);
+    const [hydrated, setHydrated] = useState(false);
     const [loadingUser, setLoadingUser] = useState(true);
 
     useEffect(() => {
-        setMounted(true);
+        setHydrated(true);
 
         if (!hasAuthCookie()) {
             setLoadingUser(false);
@@ -61,7 +62,7 @@ export default function Loginbar() {
         router.push("/");
     }
 
-    if (!mounted) {
+    if (!hydrated) {
         return (
             <div className="flex flex-wrap items-center gap-2">
                 <div className="h-8 w-20 bg-muted animate-pulse rounded" />
