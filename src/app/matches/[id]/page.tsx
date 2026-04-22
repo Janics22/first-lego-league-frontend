@@ -1,13 +1,17 @@
 import { MatchesService } from "@/api/matchesApi";
+import { UsersService } from "@/api/userApi";
 import ErrorAlert from "@/app/components/error-alert";
 import PageShell from "@/app/components/page-shell";
 import { serverAuthProvider } from "@/lib/authProvider";
+import { isAdmin } from "@/lib/authz";
 import { getEncodedResourceId } from "@/lib/halRoute";
 import { formatMatchTime } from "@/lib/matchUtils";
 import { NotFoundError, parseErrorMessage } from "@/types/errors";
 import { Match } from "@/types/match";
 import { Team } from "@/types/team";
+import { User } from "@/types/user";
 import Link from "next/link";
+import MatchDeleteSection from "./match-delete-section";
 
 export const dynamic = "force-dynamic";
 
@@ -92,8 +96,15 @@ export default async function MatchDetailPage(props: Readonly<MatchDetailPagePro
 
     let match: Match | null = null;
     let teams: Team[] = [];
+    let currentUser: User | null = null;
     let matchError: string | null = null;
     let teamsError: string | null = null;
+
+    try {
+        currentUser = await new UsersService(serverAuthProvider).getCurrentUser();
+    } catch (e) {
+        console.error("Failed to fetch current user:", e);
+    }
 
     try {
         match = await service.getMatchById(id);
@@ -124,6 +135,12 @@ export default async function MatchDetailPage(props: Readonly<MatchDetailPagePro
             description={match?.state ? `Status: ${match.state}` : undefined}
         >
             {matchError && <ErrorAlert message={matchError} />}
+
+            {!matchError && match && isAdmin(currentUser) && (
+                <div className="flex justify-end">
+                    <MatchDeleteSection matchId={id} />
+                </div>
+            )}
 
             {!matchError && match && (
                 <div className="space-y-8">

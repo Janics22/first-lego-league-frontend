@@ -1,4 +1,5 @@
 import type { AuthStrategy } from "@/lib/authProvider";
+import type { HalPage } from "@/types/pagination";
 import { ScientificProject } from "@/types/scientificProject";
 import { fetchHalCollection, fetchHalResource, getHal, mergeHal, mergeHalArray, postHal } from "./halClient";
 
@@ -38,4 +39,8 @@ export class ScientificProjectsService {
         return mergeHal<ScientificProject>(resource);
     }
 
+    async deleteScientificProject(id: string): Promise<void> {
+        const projectId = encodeURIComponent(id);
+        await deleteHal(`/scientificProjects/${projectId}`, this.authStrategy);
+    }
 }

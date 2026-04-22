@@ -14,29 +14,31 @@ import Link from "next/link";
 type PageSearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 export default async function ScientificProjectsPage({ searchParams }: Readonly<{ searchParams: PageSearchParams }>) {
+    const params = await searchParams;
+    const yearParam = params.year;
+    const year = Array.isArray(yearParam) ? yearParam[0] : yearParam;
+    const yearQuery = year ? `?year=${year}` : "";
+    const urlPage = Math.max(1, Number(params.page ?? "1") || 1);
+
     let projects: ScientificProject[] = [];
+    let result: HalPage<ScientificProject> = { items: [], hasNext: false, hasPrev: false, currentPage: 0 };
     let error: string | null = null;
-    let yearQuery = "";
     const auth = await serverAuthProvider.getAuth();
     const isLoggedIn = !!auth;
 
     try {
-        const params = await searchParams;
-        const yearParam = params.year;
-        const year = Array.isArray(yearParam) ? yearParam[0] : yearParam;
-        yearQuery = year ? `?year=${year}` : "";
         const service = new ScientificProjectsService(serverAuthProvider);
 
         if (year) {
             const editionsService = new EditionsService(serverAuthProvider);
             const edition = await editionsService.getEditionByYear(year);
-
             const editionId = edition?.uri ? getEncodedResourceId(edition.uri) : null;
             if (editionId) {
                 projects = await service.getScientificProjectsByEdition(editionId);
             }
         } else {
-            projects = await service.getScientificProjects();
+            result = await service.getScientificProjectsPaged(urlPage - 1, PAGE_SIZE);
+            projects = result.items;
         }
     } catch (e) {
         console.error("Failed to fetch scientific projects:", e);

@@ -15,14 +15,15 @@ interface TeamDetailPageProps {
     readonly params: Promise<{ id: string }>;
 }
 
-interface RawMember {
-    id?: string | number;
-    name?: string;
-    username?: string;
-    role?: string;
-    uri?: string;
-    _links?: {
-        self: { href: string };
+function toTeamMemberSnapshot(member: TeamMember): TeamMemberSnapshot {
+    return {
+        id: member.id,
+        name: member.name,
+        birthDate: member.birthDate,
+        gender: member.gender,
+        tShirtSize: member.tShirtSize,
+        role: member.role,
+        uri: member.uri ?? member.link("self")?.href,
     };
 }
 
@@ -126,13 +127,18 @@ export default async function TeamDetailPage(props: Readonly<TeamDetailPageProps
         (authority) => authority.authority === "ROLE_ADMIN"
     );
 
-    const isCoach = !!currentUser && coaches.some(
-        (c) => c.username === currentUser?.username || c.email === currentUser?.email
+    const currentUserEmail = currentUser?.email?.trim().toLowerCase();
+    const isCoach = !!currentUserEmail && coaches.some(
+        (coach) => coach.emailAddress?.trim().toLowerCase() === currentUserEmail
     );
 
     const coachName = coaches.length > 0
-        ? (coaches[0].username ?? coaches[0].email ?? "Unnamed coach")
+        ? (coaches[0].name ?? coaches[0].emailAddress ?? "Unnamed coach")
         : "No coach assigned";
+    const initialMembers = members.map(toTeamMemberSnapshot);
+    const membersKey = initialMembers
+        .map((member) => member.uri ?? String(member.id ?? member.name ?? ""))
+        .join("|");
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-background">
@@ -149,9 +155,9 @@ export default async function TeamDetailPage(props: Readonly<TeamDetailPageProps
 
                     {!membersError && (
                         <TeamMembersManager
-                            key={`${id}-${members.length}`}
+                            key={`${id}-${membersKey}`}
                             teamId={id}
-                            initialMembers={members}
+                            initialMembers={initialMembers}
                             isCoach={isCoach}
                             isAdmin={isAdmin}
                         />
