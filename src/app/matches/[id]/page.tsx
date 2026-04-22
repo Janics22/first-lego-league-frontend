@@ -13,6 +13,9 @@ import { Team } from "@/types/team";
 import { API_BASE_URL } from "@/api/halClient";
 import Link from "next/link";
 import RecordResultForm from "./record-result-form";
+import { User } from "@/types/user";
+import Link from "next/link";
+import MatchDeleteSection from "./match-delete-section";
 
 export const dynamic = "force-dynamic";
 
@@ -97,6 +100,7 @@ export default async function MatchDetailPage(props: Readonly<MatchDetailPagePro
 
     let match: Match | null = null;
     let teams: Team[] = [];
+    let currentUser: User | null = null;
     let matchError: string | null = null;
     let teamsError: string | null = null;
     let isAuthorized = false;
@@ -113,6 +117,12 @@ export default async function MatchDetailPage(props: Readonly<MatchDetailPagePro
         isAuthorized = isAdmin(currentUser) || isReferee(currentUser);
     } catch (e) {
         console.error("[MatchDetail] getCurrentUser failed:", e);
+    }
+
+    try {
+        currentUser = await new UsersService(serverAuthProvider).getCurrentUser();
+    } catch (e) {
+        console.error("Failed to fetch current user:", e);
     }
 
     try {
@@ -166,6 +176,12 @@ export default async function MatchDetailPage(props: Readonly<MatchDetailPagePro
             description={displayState ? `Status: ${displayState}` : undefined}
         >
             {matchError && <ErrorAlert message={matchError} />}
+
+            {!matchError && match && isAdmin(currentUser) && (
+                <div className="flex justify-end">
+                    <MatchDeleteSection matchId={id} />
+                </div>
+            )}
 
             {!matchError && match && (
                 <div className="space-y-8">

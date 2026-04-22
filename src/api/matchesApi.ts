@@ -114,5 +114,8 @@ export class MatchesService {
             resultSaved: raw.resultSaved,
             rankingUpdated: raw.rankingUpdated,
         };
+    async deleteMatch(id: string): Promise<void> {
+        const matchId = encodeURIComponent(id);
+        await deleteHal(`/matches/${matchId}`, this.authStrategy);
     }
 }
