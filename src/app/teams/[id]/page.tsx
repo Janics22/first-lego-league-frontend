@@ -136,11 +136,11 @@ export default async function TeamDetailPage(props: Readonly<TeamDetailPageProps
                                 team={{
                                     id: team.id,
                                     name: team.name,
-                                    city: team.city ?? undefined,
-                                    educationalCenter: team.educationalCenter ?? undefined,
-                                    category: team.category,
-                                    foundationYear: team.foundationYear,
-                                    inscriptionDate: team.inscriptionDate,
+                                    city: team.city ?? null,
+                                    educationalCenter: team.educationalCenter ?? null,
+                                    category: team.category ?? null,
+                                    foundationYear: team.foundationYear ?? null,
+                                    inscriptionDate: team.inscriptionDate ?? null,
                                 }}
                             />
                         </div>
