@@ -3,6 +3,7 @@ import { UsersService } from "@/api/userApi";
 import ErrorAlert from "@/app/components/error-alert";
 import PageShell from "@/app/components/page-shell";
 import { serverAuthProvider } from "@/lib/authProvider";
+import { isAdmin, isReferee } from "@/lib/authz";
 import { getTeamDisplayName } from "@/lib/teamUtils";
 import { getEncodedResourceId } from "@/lib/halRoute";
 import { formatMatchTime } from "@/lib/matchUtils";
