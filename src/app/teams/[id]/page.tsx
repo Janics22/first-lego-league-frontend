@@ -134,8 +134,8 @@ export default async function TeamDetailPage(props: Readonly<TeamDetailPageProps
                         <div className="mb-6 rounded-md border border-border p-4">
                             <TeamEditSection
                                 team={{
-                                    id: team.id,
-                                    name: team.name,
+                                    id: team.id!,
+                                    name: team.name!,
                                     city: team.city ?? null,
                                     educationalCenter: team.educationalCenter ?? null,
                                     category: team.category ?? null,
