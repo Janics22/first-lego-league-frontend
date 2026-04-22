@@ -6,11 +6,13 @@ import { InfoRow } from "@/app/components/info-row";
 import { TeamCard } from "@/app/components/team-card";
 import { serverAuthProvider } from "@/lib/authProvider";
 import { isAdmin } from "@/lib/authz";
-import { fetchHalResource } from "@/api/halClient";
+import { fetchHalCollection, fetchHalResource } from "@/api/halClient";
 import { NotFoundError, parseErrorMessage } from "@/types/errors";
 import { ScientificProject } from "@/types/scientificProject";
+import { ProjectRoom } from "@/types/projectRoom";
 import { Team } from "@/types/team";
 import { User } from "@/types/user";
+import { Volunteer } from "@/types/volunteer";
 import ScientificProjectDeleteSection from "./scientific-project-delete-section";
 
 export const dynamic = "force-dynamic";
@@ -35,6 +37,9 @@ export default async function ScientificProjectDetailPage(props: Readonly<Scient
     let project: ScientificProject | null = null;
     let team: Team | null = null;
     let currentUser: User | null = null;
+    let projectRoom: ProjectRoom | null = null;
+    let managedByJudge: Volunteer | null = null;
+    let panelists: Volunteer[] = [];
     let projectError: string | null = null;
     let teamError: string | null = null;
 
@@ -60,6 +65,25 @@ export default async function ScientificProjectDetailPage(props: Readonly<Scient
         } catch (e) {
             console.error("Failed to fetch project team:", e);
             teamError = `Could not load team information. ${parseErrorMessage(e)}`;
+        }
+    }
+
+    const projectRoomHref = project?.link("projectRoom")?.href;
+    if (projectRoomHref) {
+        try {
+            projectRoom = await fetchHalResource<ProjectRoom>(projectRoomHref, serverAuthProvider);
+
+            const judgeHref = projectRoom.link("managedByJudge")?.href;
+            if (judgeHref) {
+                managedByJudge = await fetchHalResource<Volunteer>(judgeHref, serverAuthProvider);
+            }
+
+            const panelistsHref = projectRoom.link("panelists")?.href;
+            if (panelistsHref) {
+                panelists = await fetchHalCollection<Volunteer>(panelistsHref, serverAuthProvider, "judges");
+            }
+        } catch (e) {
+            console.error("Failed to fetch project room:", e);
         }
     }
 
@@ -113,9 +137,25 @@ export default async function ScientificProjectDetailPage(props: Readonly<Scient
                             <h2 id="room-heading" className="section-title">Evaluation room</h2>
                         </div>
                         <div className="rounded-lg border border-border bg-card p-5">
-                            <p className="text-sm text-muted-foreground">
-                                Room and judge information will be available in a future update.
-                            </p>
+                            {!projectRoom && (
+                                <p className="text-sm text-muted-foreground">No evaluation room assigned.</p>
+                            )}
+                            {projectRoom && (
+                                <div className="space-y-3">
+                                    {projectRoom.roomNumber && (
+                                        <InfoRow label="Room" value={projectRoom.roomNumber} />
+                                    )}
+                                    {managedByJudge && (
+                                        <InfoRow label="Judge" value={managedByJudge.name ?? managedByJudge.emailAddress ?? "Unknown judge"} />
+                                    )}
+                                    {panelists.length > 0 && (
+                                        <InfoRow label="Panelists" value={panelists.map(p => p.name ?? p.emailAddress ?? "Unknown").join(", ")} />
+                                    )}
+                                    {!projectRoom.roomNumber && !managedByJudge && panelists.length === 0 && (
+                                        <p className="text-sm text-muted-foreground">No room details available.</p>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </section>
                 </div>
