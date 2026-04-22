@@ -1,8 +1,7 @@
 import type { AuthStrategy } from "@/lib/authProvider";
 import type { HalPage } from "@/types/pagination";
 import { ScientificProject } from "@/types/scientificProject";
-import { fetchHalPagedCollection, fetchHalResource, getHal, mergeHal, mergeHalArray, patchHal, postHal } from "./halClient";
-import { deleteHal, fetchHalCollection, fetchHalPagedCollection, fetchHalResource, getHal, mergeHal, mergeHalArray, postHal } from "./halClient";
+import { fetchHalCollection, fetchHalPagedCollection, fetchHalResource, getHal, mergeHal, mergeHalArray, patchHal, postHal } from "./halClient";
 
 export class ScientificProjectsService {
     constructor(private readonly authStrategy: AuthStrategy) { }
@@ -60,8 +59,5 @@ export class ScientificProjectsService {
         const projectId = encodeURIComponent(id);
         const resource = await patchHal(`/scientificProjects/${projectId}`, data, this.authStrategy);
         return resource ? mergeHal<ScientificProject>(resource) : null;
-    async deleteScientificProject(id: string): Promise<void> {
-        const projectId = encodeURIComponent(id);
-        await deleteHal(`/scientificProjects/${projectId}`, this.authStrategy);
     }
 }

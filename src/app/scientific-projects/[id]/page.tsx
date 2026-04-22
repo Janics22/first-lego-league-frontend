@@ -5,17 +5,14 @@ import PageShell from "@/app/components/page-shell";
 import { InfoRow } from "@/app/components/info-row";
 import { TeamCard } from "@/app/components/team-card";
 import ScientificProjectEvaluationEditor from "./scientific-project-evaluation-editor";
-import { UsersService } from "@/api/userApi";
-import { isAdmin, isJudge } from "@/lib/authz";
 import { serverAuthProvider } from "@/lib/authProvider";
-import { isAdmin } from "@/lib/authz";
+import { isAdmin, isJudge } from "@/lib/authz";
 import { fetchHalResource } from "@/api/halClient";
 import { NotFoundError, parseErrorMessage } from "@/types/errors";
 import { ScientificProject } from "@/types/scientificProject";
 import { Team } from "@/types/team";
 import { User } from "@/types/user";
 import { redirect } from "next/navigation";
-import ScientificProjectDeleteSection from "./scientific-project-delete-section";
 
 export const dynamic = "force-dynamic";
 
@@ -45,7 +42,6 @@ export default async function ScientificProjectDetailPage(props: Readonly<Scient
 
     try {
         currentUser = await userService.getCurrentUser().catch(() => null);
-        currentUser = await new UsersService(serverAuthProvider).getCurrentUser();
     } catch (e) {
         console.error("Failed to fetch current user:", e);
     }
@@ -84,12 +80,6 @@ export default async function ScientificProjectDetailPage(props: Readonly<Scient
             description={project?.score !== undefined && project?.score !== null ? `Score: ${project.score} pts` : undefined}
         >
             {projectError && <ErrorAlert message={projectError} />}
-
-            {!projectError && project && isAdmin(currentUser) && (
-                <div className="flex justify-end">
-                    <ScientificProjectDeleteSection projectId={id} />
-                </div>
-            )}
 
             {!projectError && project && (
                 <div className="space-y-8">
