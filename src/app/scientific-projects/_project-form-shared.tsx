@@ -1,5 +1,4 @@
 'use client';
-/* @ts-expect-error - React Compiler incompatibility with React Hook Form watch() */
 'use no memo';
 
 import { Button } from '@/app/components/button';
