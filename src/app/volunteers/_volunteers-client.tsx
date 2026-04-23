@@ -10,6 +10,7 @@ export interface VolunteerItem {
     name?: string;
     emailAddress?: string;
     type?: VolunteerRole;
+    uri?: string;
 }
 
 interface VolunteersClientProps {
@@ -18,13 +19,25 @@ interface VolunteersClientProps {
     floaters: VolunteerItem[];
 }
 
+interface VolunteerSectionProps {
+    title: string;
+    typePlural: string;
+    volunteers: VolunteerItem[];
+    emptyMessage: string;
+}
+
 function filterByName(volunteers: VolunteerItem[], query: string): VolunteerItem[] {
     const q = query.trim().toLowerCase();
     if (!q) return volunteers;
     return volunteers.filter(v => v.name?.toLowerCase().includes(q));
 }
 
-function VolunteerSection({ title, typePlural, volunteers, emptyMessage }: any) {
+function VolunteerSection({
+    title,
+    typePlural,
+    volunteers,
+    emptyMessage,
+}: Readonly<VolunteerSectionProps>) {
     const [query, setQuery] = useState('');
     const filtered = filterByName(volunteers, query);
 
@@ -40,20 +53,18 @@ function VolunteerSection({ title, typePlural, volunteers, emptyMessage }: any) 
             />
 
             {filtered.length === 0 ? (
-                <EmptyState title={`No ${typePlural} found`} description={emptyMessage} />
+                <EmptyState title={`No ${typePlural}`} description={emptyMessage} />
             ) : (
                 <ul className="list-grid">
                     {filtered.map((v) => {
-
-                        const id = `${v.type}-${v.name}`;
-                        const encoded = encodeURIComponent(id);
+                        const id = v.uri ? encodeURIComponent(v.uri) : '';
 
                         return (
                             <li key={id} className="list-card pl-7">
                                 <div className="list-kicker">{v.type}</div>
 
-                                <Link href={`/volunteers/${encoded}`}>
-                                    <div className="list-title cursor-pointer hover:underline">
+                                <Link href={`/volunteers/${id}`}>
+                                    <div className="list-title font-medium hover:underline cursor-pointer">
                                         {v.name || 'Unknown'}
                                     </div>
                                 </Link>
@@ -70,12 +81,31 @@ function VolunteerSection({ title, typePlural, volunteers, emptyMessage }: any) 
     );
 }
 
-export default function VolunteersClient({ judges, referees, floaters }: VolunteersClientProps) {
+export default function VolunteersClient({
+    judges,
+    referees,
+    floaters,
+}: Readonly<VolunteersClientProps>) {
     return (
         <div className="space-y-12">
-            <VolunteerSection title="Judges" typePlural="judges" volunteers={judges} emptyMessage="" />
-            <VolunteerSection title="Referees" typePlural="referees" volunteers={referees} emptyMessage="" />
-            <VolunteerSection title="Floaters" typePlural="floaters" volunteers={floaters} emptyMessage="" />
+            <VolunteerSection
+                title="Judges"
+                typePlural="judges"
+                volunteers={judges}
+                emptyMessage="No judges available"
+            />
+            <VolunteerSection
+                title="Referees"
+                typePlural="referees"
+                volunteers={referees}
+                emptyMessage="No referees available"
+            />
+            <VolunteerSection
+                title="Floaters"
+                typePlural="floaters"
+                volunteers={floaters}
+                emptyMessage="No floaters available"
+            />
         </div>
     );
 }
