@@ -28,7 +28,7 @@ export default async function VolunteersPage() {
         referees = data.referees.map(toVolunteerItem);
         floaters = data.floaters.map(toVolunteerItem);
     } catch (e) {
-        console.error("Failed to fetch volunteers:", e);
+        console.error(e);
         error = parseErrorMessage(e);
     }
 
@@ -36,7 +36,7 @@ export default async function VolunteersPage() {
         <PageShell
             eyebrow="Volunteers directory"
             title="Volunteers"
-            description="Manage the competition volunteers including judges, referees, and floaters."
+            description="Manage volunteers"
         >
             <div className="space-y-8">
                 {error && <ErrorAlert message={error} />}
