@@ -1,14 +1,18 @@
 import { AwardsService } from "@/api/awardApi";
 import { EditionsService } from "@/api/editionApi";
 import { LeaderboardService } from "@/api/leaderboardApi";
+import { MediaService } from "@/api/mediaApi";
 import ErrorAlert from "@/app/components/error-alert";
 import EmptyState from "@/app/components/empty-state";
 import LeaderboardTable from "@/app/components/leaderboard-table";
+import { MediaItem } from "@/app/components/media-gallery";
+import { MediaSection } from "@/app/components/media-section";
 import { serverAuthProvider } from "@/lib/authProvider";
 import type { LeaderboardItem } from "@/types/leaderboard";
 import { getEncodedResourceId } from "@/lib/halRoute";
 import { Award } from "@/types/award";
 import { Edition } from "@/types/edition";
+import { MediaContent } from "@/types/mediaContent";
 import { Team } from "@/types/team";
 import { parseErrorMessage, NotFoundError } from "@/types/errors";
 import Link from "next/link";
@@ -75,6 +79,46 @@ function normalizeUri(resourceUri: string | null | undefined): string | null {
     return sanitizedUri.replace(/^https?:\/\/[^/]+/i, "");
 }
 
+interface EditionUriData {
+    awards: Award[];
+    mediaContents: MediaContent[];
+    awardsError: string | null;
+    mediaError: string | null;
+}
+
+async function fetchByEditionUri(
+    editionUri: string,
+    awardsService: AwardsService,
+    mediaService: MediaService,
+): Promise<EditionUriData> {
+    const result: EditionUriData = { awards: [], mediaContents: [], awardsError: null, mediaError: null };
+
+    try {
+        result.awards = await awardsService.getAwardsOfEdition(editionUri);
+    } catch (e) {
+        console.error("Failed to fetch awards:", e);
+        result.awardsError = parseErrorMessage(e);
+    }
+
+    try {
+        result.mediaContents = await mediaService.getMediaByEdition(editionUri);
+    } catch (e) {
+        console.error("Failed to fetch media:", e);
+        result.mediaError = parseErrorMessage(e);
+    }
+
+    return result;
+}
+
+function toMediaItem(content: MediaContent): MediaItem {
+    return {
+        uri: content.uri ?? content.link?.("self")?.href,
+        id: content.id,
+        type: content.type,
+        url: content.url ?? content.id,  // real API omits `url`; the `id` field holds the media URL
+    };
+}
+
 function getAwardsByTeamUri(awards: Award[]): Map<string, Award[]> {
     const awardsByTeamUri = new Map<string, Award[]>();
 
@@ -96,15 +140,18 @@ export default async function EditionDetailPage(props: Readonly<EditionDetailPag
     const { id } = await props.params;
     const editionsService = new EditionsService(serverAuthProvider);
     const awardsService = new AwardsService(serverAuthProvider);
+    const mediaService = new MediaService(serverAuthProvider);
 
     let currentUser: User | null = null;
     let edition: Edition | null = null;
     let teams: Team[] = [];
     let awards: Award[] = [];
+    let mediaContents: MediaContent[] = [];
     let leaderboardItems: LeaderboardItem[] = [];
     let error: string | null = null;
     let teamsError: string | null = null;
     let awardsError: string | null = null;
+    let mediaError: string | null = null;
     let classificationError: string | null = null;
 
     try {
@@ -131,12 +178,7 @@ export default async function EditionDetailPage(props: Readonly<EditionDetailPag
         }
 
         if (edition.uri) {
-            try {
-                awards = await awardsService.getAwardsOfEdition(edition.uri);
-            } catch (e) {
-                console.error("Failed to fetch awards:", e);
-                awardsError = parseErrorMessage(e);
-            }
+            ({ awards, mediaContents, awardsError, mediaError } = await fetchByEditionUri(edition.uri, awardsService, mediaService));
         }
 
         try {
@@ -255,6 +297,21 @@ export default async function EditionDetailPage(props: Readonly<EditionDetailPag
 
                             {!classificationError && leaderboardItems.length > 0 && (
                                 <LeaderboardTable items={leaderboardItems} />
+                            )}
+
+                            {mediaError && <ErrorAlert message={mediaError} />}
+
+                            {!mediaError && mediaContents.length > 0 && (
+                                <MediaSection mediaContents={mediaContents.map(toMediaItem)} />
+                            )}
+
+                            {!mediaError && mediaContents.length === 0 && (
+                                <div className="mt-6">
+                                    <EmptyState
+                                        title="No media found"
+                                        description="No media has been added to this edition yet."
+                                    />
+                                </div>
                             )}
                         </>
                     )}
