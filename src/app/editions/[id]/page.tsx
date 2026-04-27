@@ -21,6 +21,7 @@ import { User } from "@/types/user";
 import { parseErrorMessage, NotFoundError } from "@/types/errors";
 import Link from "next/link";
 import { getTeamDisplayName } from "@/lib/teamUtils";
+import AddMediaForm from "./_add-media-form";
 
 interface EditionDetailPageProps {
     readonly params: Promise<{ id: string }>;
