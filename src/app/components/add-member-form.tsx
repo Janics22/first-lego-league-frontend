@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/app/components/button';
-import { AVAILABLE_MEMBER_ROLES, TEAM_MEMBER_GENDER_OPTIONS, TeamMemberGender } from '@/types/team';
+import { AVAILABLE_MEMBER_ROLES, TEAM_MEMBER_GENDER_OPTIONS, TeamMemberGender, TSHIRT_SIZES, TShirtSize } from '@/types/team';
 import { useId, useState } from 'react';
 
 type AddMemberFormProps = Readonly<{
@@ -16,9 +16,6 @@ type AddMemberFormProps = Readonly<{
     isLoading?: boolean;
 }>;
 
-const GENDERS = ['MALE', 'FEMALE', 'OTHER'];
-const TSHIRT_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
-
 export function AddMemberForm({
     onSubmit,
     onCancel,
@@ -28,12 +25,13 @@ export function AddMemberForm({
     const roleSelectId = useId();
     const birthDateInputId = useId();
     const genderSelectId = useId();
+    const tShirtSizeSelectId = useId();
 
     const [name, setName] = useState('');
     const [role, setRole] = useState<string>(AVAILABLE_MEMBER_ROLES[0]);
     const [birthDate, setBirthDate] = useState('');
     const [gender, setGender] = useState<TeamMemberGender>(TEAM_MEMBER_GENDER_OPTIONS[0]);
-    const [tShirtSize, setTShirtSize] = useState<string>(TSHIRT_SIZES[2]); // Default 'M'
+    const [tShirtSize, setTShirtSize] = useState<TShirtSize>(TSHIRT_SIZES[2]); // Default 'M'
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -50,8 +48,6 @@ export function AddMemberForm({
             setTShirtSize(TSHIRT_SIZES[2]);
         }
     };
-
-    const isDisabled = isLoading || !name.trim() || !role || !birthDate || !gender || !tShirtSize;
 
     return (
         <form onSubmit={handleSubmit} className="space-y-3 border p-4 rounded bg-white dark:bg-zinc-900 shadow-sm">
@@ -123,11 +119,11 @@ export function AddMemberForm({
                     <select
                         id={genderSelectId}
                         value={gender}
-                        onChange={e => setGender(e.target.value)}
+                        onChange={e => setGender(e.target.value as TeamMemberGender)}
                         className="border p-2 w-full rounded bg-white dark:bg-zinc-800"
                         disabled={isLoading}
                     >
-                        {GENDERS.map(g => (
+                        {TEAM_MEMBER_GENDER_OPTIONS.map(g => (
                             <option key={g} value={g}>
                                 {g}
                             </option>
@@ -144,7 +140,7 @@ export function AddMemberForm({
                     <select
                         id={tShirtSizeSelectId}
                         value={tShirtSize}
-                        onChange={e => setTShirtSize(e.target.value)}
+                        onChange={e => setTShirtSize(e.target.value as TShirtSize)}
                         className="border p-2 w-full rounded bg-white dark:bg-zinc-800"
                         disabled={isLoading}
                     >
@@ -155,45 +151,6 @@ export function AddMemberForm({
                         ))}
                     </select>
                 </div>
-            </div>
-
-            <div>
-                <label
-                    htmlFor={birthDateInputId}
-                    className="block text-xs font-medium uppercase text-zinc-500 mb-1"
-                >
-                    Birth date
-                </label>
-                <input
-                    id={birthDateInputId}
-                    type="date"
-                    value={birthDate}
-                    onChange={e => setBirthDate(e.target.value)}
-                    className="border p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    disabled={isLoading}
-                />
-            </div>
-
-            <div>
-                <label
-                    htmlFor={genderSelectId}
-                    className="block text-xs font-medium uppercase text-zinc-500 mb-1"
-                >
-                    Gender
-                </label>
-                <select
-                    id={genderSelectId}
-                    value={gender}
-                    onChange={e => setGender(e.target.value as TeamMemberGender)}
-                    className="border p-2 w-full rounded bg-white dark:bg-zinc-800"
-                    disabled={isLoading}
-                >
-                    {TEAM_MEMBER_GENDER_OPTIONS.map(option => (
-                        <option key={option} value={option}>
-                            {option}
-                        </option>
-                    ))}
-                </select>
             </div>
 
             <div className="flex gap-2 pt-2">
