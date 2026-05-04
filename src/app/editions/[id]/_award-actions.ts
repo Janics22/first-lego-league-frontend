@@ -7,6 +7,18 @@ import { isAdmin } from "@/lib/authz";
 import { AuthenticationError, parseErrorMessage } from "@/types/errors";
 import { revalidatePath } from "next/cache";
 
+type AwardUpdateResult =
+    | {
+        success: true;
+        award: {
+            name: string;
+            title: string;
+            category: string;
+            edition: string;
+        };
+    }
+    | { success: false; error: string };
+
 async function assertAdminAccess() {
     const auth = await serverAuthProvider.getAuth();
     if (!auth) {
@@ -19,7 +31,7 @@ async function assertAdminAccess() {
     }
 }
 
-export async function updateAward(awardUri: string, editionId: string, formData: FormData) {
+export async function updateAward(awardUri: string, editionId: string, formData: FormData): Promise<AwardUpdateResult> {
     try {
         await assertAdminAccess();
 
@@ -50,7 +62,15 @@ export async function updateAward(awardUri: string, editionId: string, formData:
 
         revalidatePath(`/editions/${editionId}`);
 
-        return { success: true };
+        return {
+            success: true,
+            award: {
+                name,
+                title,
+                category,
+                edition,
+            },
+        };
     } catch (error) {
         return {
             success: false,

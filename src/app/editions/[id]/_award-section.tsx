@@ -66,10 +66,6 @@ export default function AwardSection({
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     useEffect(() => {
-        setDisplayAward(award);
-    }, [award]);
-
-    useEffect(() => {
         const dialog = dialogRef.current;
         if (!dialog) {
             return;
@@ -124,9 +120,10 @@ export default function AwardSection({
 
             setDisplayAward((current) => ({
                 ...current,
-                name,
-                title,
-                category,
+                name: result.award.name,
+                title: result.award.title,
+                category: result.award.category,
+                edition: result.award.edition,
             }));
             setIsEditing(false);
             setSuccessMessage("Award updated successfully.");
