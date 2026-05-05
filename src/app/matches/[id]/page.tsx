@@ -5,12 +5,13 @@ import { TeamsService } from "@/api/teamApi";
 import { UsersService } from "@/api/userApi";
 import { buttonVariants } from "@/app/components/button";
 import ErrorAlert from "@/app/components/error-alert";
+import { InfoRow } from '@/app/components/info-row';
 import PageShell from "@/app/components/page-shell";
 import { serverAuthProvider } from "@/lib/authProvider";
 import { isAdmin, isReferee } from "@/lib/authz";
-import { getTeamDisplayName } from "@/lib/teamUtils";
 import { getEncodedResourceId } from "@/lib/halRoute";
 import { formatMatchTime } from "@/lib/matchUtils";
+import { getTeamDisplayName } from "@/lib/teamUtils";
 import { Edition } from "@/types/edition";
 import { NotFoundError, parseErrorMessage } from "@/types/errors";
 import { Match } from "@/types/match";
@@ -22,7 +23,6 @@ import { Pencil } from "lucide-react";
 import Link from "next/link";
 import MatchDeleteSection from "./match-delete-section";
 import RecordResultForm from "./record-result-form";
-import { InfoRow } from '@/app/components/info-row';
 
 export const dynamic = "force-dynamic";
 

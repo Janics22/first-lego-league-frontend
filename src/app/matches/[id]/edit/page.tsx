@@ -123,9 +123,10 @@ function toTimeInputValue(value?: string) {
         return "";
     }
 
-    const timeMatch = /^(\d{2}):(\d{2})(?::\d{2}(?:\.\d+)?)?$/.exec(value);
-    if (timeMatch) {
-        return `${timeMatch[1]}:${timeMatch[2]}`;
+    const dateTimeMatch =
+        /^(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2})(?::\d{2}(?:\.\d+)?)?$/.exec(value);
+    if (dateTimeMatch) {
+        return `${dateTimeMatch[1]}-${dateTimeMatch[2]}-${dateTimeMatch[3]}T${dateTimeMatch[4]}:${dateTimeMatch[5]}`;
     }
 
     const date = new Date(value);
@@ -133,11 +134,8 @@ function toTimeInputValue(value?: string) {
         return "";
     }
 
-    return new Intl.DateTimeFormat("en-GB", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-    }).format(date);
+    const pad = (num: number) => String(num).padStart(2, "0");
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
 function getMatchTitle(match: Match | null, id: string) {
