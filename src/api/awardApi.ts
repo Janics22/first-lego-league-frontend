@@ -1,10 +1,17 @@
 import type { AuthStrategy } from "@/lib/authProvider";
 import { Award, CreateAwardPayload } from "@/types/award";
 import { Team } from "@/types/team";
-import { createHalResource, fetchHalCollection, fetchHalResource, deleteHal } from "./halClient";
+import { createHalResource, deleteHal, fetchHalCollection, fetchHalResource, updateHalResource } from "./halClient";
 
 function getResourceUri(resource: Team & { link: (relation: string) => { href?: string } | undefined }): string | null {
     return resource.uri ?? resource.link("self")?.href ?? null;
+}
+
+export interface UpdateAwardPayload {
+    name: string;
+    title?: string;
+    category?: string;
+    edition: string;
 }
 
 export class AwardsService {
@@ -60,6 +67,20 @@ export class AwardsService {
                 category: payload.category.trim(),
                 edition: payload.edition,
                 winner: payload.winner,
+            },
+            this.authStrategy,
+            "award"
+        );
+    }
+
+    async updateAward(awardUri: string, payload: UpdateAwardPayload): Promise<Award> {
+        return updateHalResource<Award>(
+            awardUri,
+            {
+                name: payload.name.trim(),
+                title: payload.title?.trim() ?? "",
+                category: payload.category?.trim() ?? "",
+                edition: payload.edition,
             },
             this.authStrategy,
             "award"
