@@ -1,6 +1,5 @@
 import { VolunteersService } from "@/api/volunteerApi";
 import { UsersService } from "@/api/userApi";
-import { ProjectRoomsService } from "@/api/projectRoomApi";
 import { EditionsService } from "@/api/editionApi";
 import { serverAuthProvider } from "@/lib/authProvider";
 import { revalidatePath } from "next/cache";
@@ -20,44 +19,57 @@ interface Props {
 }
 
 async function getJudgeAssignment(volunteerUri: string) {
-    const projectRoomService = new ProjectRoomsService(serverAuthProvider);
-    const rooms = await projectRoomService.getProjectRooms();
-    for (let index = 0; index < rooms.length; index++) {
-        const room = rooms[index];
-        const judgeEmbedded = room.embedded('managedByJudge');
-        if (judgeEmbedded) {
-            const judge = mergeHal<Volunteer>(judgeEmbedded);
-            if (judge.uri === volunteerUri) {
-                const roomId = room.uri ? getEncodedResourceId(room.uri) : null;
-                return { id: roomId, name: `Room ${room.roomNumber ?? (index + 1)}` };
-            }
-        }
+    try {
+        const judgeResource = await fetchHalResource<Volunteer>(volunteerUri, serverAuthProvider);
+        const memberOfRoomLink = judgeResource.link("memberOfRoom")?.href;
+
+        if (!memberOfRoomLink) return null;
+
+        const roomResource = await fetchHalResource<any>(memberOfRoomLink, serverAuthProvider);
+        const uri = roomResource.uri || roomResource.link("self")?.href;
+        if (!uri) return null;
+
+        const parts = uri.split("/projectRooms/");
+        if (parts.length <= 1) return null;
+
+        const roomId = decodeURIComponent(parts[1].split('/')[0]);
+        return { id: roomId, name: roomResource.roomNumber ? `Room ${roomResource.roomNumber}` : `Room ${roomId}` };
+    } catch (e) {
+        return null;
     }
-    return null;
 }
 
 async function getRefereeAssignment(volunteerUri: string) {
-    const refereeResource = await fetchHalResource<Volunteer>(volunteerUri, serverAuthProvider);
-    const supervisesTableLink = refereeResource.link("supervisesTable")?.href;
+    try {
+        const refereeResource = await fetchHalResource<Volunteer>(volunteerUri, serverAuthProvider);
+        const supervisesTableLink = refereeResource.link("supervisesTable")?.href;
 
-    if (!supervisesTableLink) return null;
+        if (!supervisesTableLink) return null;
 
-    const parts = supervisesTableLink.split("/competitionTables/");
-    if (parts.length <= 1) return null;
+        const tableResource = await fetchHalResource<any>(supervisesTableLink, serverAuthProvider);
+        const uri = tableResource.uri || tableResource.link("self")?.href;
+        
+        if (!uri) return null;
 
-    const tableId = decodeURIComponent(parts[1]);
+        const parts = uri.split("/competitionTables/");
+        if (parts.length <= 1) return null;
 
-    const editionsService = new EditionsService(serverAuthProvider);
-    const editions = await editionsService.getEditions();
-    if (editions.length > 0) {
-        const activeEdition = editions.find(e => e.state === 'ACTIVE') || editions.at(-1)!;
-        return { 
-            tableId, 
-            editionId: activeEdition.uri ? getEncodedResourceId(activeEdition.uri) : null 
-        };
+        const tableId = decodeURIComponent(parts[1].split('/')[0]);
+
+        const editionsService = new EditionsService(serverAuthProvider);
+        const editions = await editionsService.getEditions();
+        if (editions.length > 0) {
+            const activeEdition = editions.find(e => e.state === 'ACTIVE') || editions.at(-1)!;
+            return { 
+                tableId, 
+                editionId: activeEdition.uri ? getEncodedResourceId(activeEdition.uri) : null 
+            };
+        }
+        
+        return { tableId, editionId: null };
+    } catch (e) {
+        return null;
     }
-    
-    return { tableId, editionId: null };
 }
 
 export default async function VolunteerDetailPage(props: Readonly<Props>) {
