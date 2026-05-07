@@ -199,7 +199,7 @@ export default async function EditionDetailPage(props: Readonly<EditionDetailPag
                             )}
                         </div>
 
-                        {currentUser && isAdmin(currentUser) && (
+                        {currentUser && isAdmin(currentUser) && edition?.state !== "CLOSED" && (
                             <div className="flex gap-2">
                                 <Link
                                     href={`/editions/${id}/edit`}
@@ -305,7 +305,7 @@ export default async function EditionDetailPage(props: Readonly<EditionDetailPag
                             {!roundsError && (
                                 <RoundsManager
                                     initialRounds={rounds.map((r) => ({ uri: r.uri, number: r.number }))}
-                                    isAdmin={!!(currentUser && isAdmin(currentUser))}
+                                    isAdmin={!!(currentUser && isAdmin(currentUser) && edition?.state !== "CLOSED")}
                                 />
                             )}
 
@@ -314,7 +314,7 @@ export default async function EditionDetailPage(props: Readonly<EditionDetailPag
                                     Media Gallery
                                 </h2>
 
-                                {currentUser && isAdmin(currentUser) && edition && (
+                                {currentUser && isAdmin(currentUser) && edition && edition?.state !== "CLOSED" && (
                                     <MediaUploadForm editionId={id} />
                                 )}
 
