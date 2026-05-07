@@ -28,6 +28,7 @@ import DeleteEditionButton from "./delete-edition-button";
 import RoundsManager from "./rounds-manager";
 import { RoundsService } from "@/api/roundsApi";
 import EditionStateControls from "./edition-state-controls";
+import { isEditionFinished } from "@/lib/editionStateGuards";
 
 
 interface EditionDetailPageProps {
@@ -199,7 +200,7 @@ export default async function EditionDetailPage(props: Readonly<EditionDetailPag
                             )}
                         </div>
 
-                        {currentUser && isAdmin(currentUser) && edition?.state !== "CLOSED" && (
+                        {currentUser && isAdmin(currentUser) && !isEditionFinished(edition?.state) && (
                             <div className="flex gap-2">
                                 <Link
                                     href={`/editions/${id}/edit`}
@@ -305,7 +306,7 @@ export default async function EditionDetailPage(props: Readonly<EditionDetailPag
                             {!roundsError && (
                                 <RoundsManager
                                     initialRounds={rounds.map((r) => ({ uri: r.uri, number: r.number }))}
-                                    isAdmin={!!(currentUser && isAdmin(currentUser) && edition?.state !== "CLOSED")}
+                                    isAdmin={!!(currentUser && isAdmin(currentUser) && !isEditionFinished(edition?.state))}
                                 />
                             )}
 
@@ -314,7 +315,7 @@ export default async function EditionDetailPage(props: Readonly<EditionDetailPag
                                     Media Gallery
                                 </h2>
 
-                                {currentUser && isAdmin(currentUser) && edition && edition?.state !== "CLOSED" && (
+                                {currentUser && isAdmin(currentUser) && edition && !isEditionFinished(edition?.state) && (
                                     <MediaUploadForm editionId={id} />
                                 )}
 
