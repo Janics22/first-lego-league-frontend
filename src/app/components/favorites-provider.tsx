@@ -47,7 +47,6 @@ export function FavoritesProvider({ children }: Readonly<{ children: React.React
     );
 
     function persist(nextFavorites: FavoriteItem[]) {
-        setFavorites(nextFavorites);
         saveFavorites(nextFavorites);
 
         if (typeof window !== "undefined") {
