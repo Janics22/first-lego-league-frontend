@@ -3,6 +3,7 @@ import { API_BASE_URL } from "@/api/halClient";
 import { MatchesService } from "@/api/matchesApi";
 import { TeamsService } from "@/api/teamApi";
 import { UsersService } from "@/api/userApi";
+import FavoriteActionButton from "@/app/components/favorite-action-button";
 import { buttonVariants } from "@/app/components/button";
 import { Breadcrumb } from "@/app/components/breadcrumb";
 import ErrorAlert from "@/app/components/error-alert";
@@ -268,6 +269,19 @@ export default async function MatchDetailPage(props: Readonly<MatchDetailPagePro
             eyebrow="Match details"
             title={getMatchTitle(match, id)}
             description={displayState ? `Status: ${displayState}` : undefined}
+            heroAside={
+                match ? (
+                    <div className="flex flex-col items-stretch gap-2">
+                        <FavoriteActionButton
+                            type="match"
+                            id={String(id)}
+                            label={getMatchTitle(match, id)}
+                            href={`/matches/${id}${yearQuery}`}
+                            secondaryLabel={displayEdition}
+                        />
+                    </div>
+                ) : undefined
+            }
         >
             <Breadcrumb
                 items={[

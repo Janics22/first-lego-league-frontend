@@ -1,5 +1,6 @@
 import { ScientificProjectsService } from "@/api/scientificProjectApi";
 import { UsersService } from "@/api/userApi";
+import FavoriteActionButton from "@/app/components/favorite-action-button";
 import ErrorAlert from "@/app/components/error-alert";
 import PageShell from "@/app/components/page-shell";
 import { Breadcrumb } from "@/app/components/breadcrumb";
@@ -157,13 +158,24 @@ export default async function ScientificProjectDetailPage(
                     : undefined
             }
             heroAside={
-                isAdmin(currentUser) && project && isEditionActive(edition?.state) ? (
-                    <Link
-                        href={`/scientific-projects/${id}/edit`}
-                        className={buttonVariants({ variant: "default", size: "sm" })}
-                    >
-                        Edit
-                    </Link>
+                project ? (
+                    <div className="flex flex-col items-stretch gap-2">
+                        <FavoriteActionButton
+                            type="scientific-project"
+                            id={String(id)}
+                            label={getProjectTitle(project, id)}
+                            href={`/scientific-projects/${id}`}
+                        />
+
+                        {isAdmin(currentUser) && isEditionActive(edition?.state) ? (
+                            <Link
+                                href={`/scientific-projects/${id}/edit`}
+                                className={buttonVariants({ variant: "default", size: "sm" })}
+                            >
+                                Edit
+                            </Link>
+                        ) : null}
+                    </div>
                 ) : undefined
             }
         >
