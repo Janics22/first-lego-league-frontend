@@ -1,4 +1,4 @@
-export type FavoriteEntityType = "team" | "edition" | "competition-table";
+export type FavoriteEntityType = "team" | "edition" | "competition-table" | "scientific-project" | "match";
 
 export interface FavoriteItem {
     readonly type: FavoriteEntityType;
@@ -15,7 +15,11 @@ export function getFavoriteKey(item: Pick<FavoriteItem, "type" | "id">): string 
 }
 
 function isFavoriteEntityType(value: unknown): value is FavoriteEntityType {
-    return value === "team" || value === "edition" || value === "competition-table";
+    return value === "team"
+        || value === "edition"
+        || value === "competition-table"
+        || value === "scientific-project"
+        || value === "match";
 }
 
 function normalizeFavorite(item: FavoriteItem): FavoriteItem {

@@ -7,9 +7,43 @@ import { ChevronDown, Star, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+function getFavoriteTypeLabel(type: string): string {
+    switch (type) {
+        case "team":
+            return "Team";
+        case "edition":
+            return "Edition";
+        case "competition-table":
+            return "Competition table";
+        case "scientific-project":
+            return "Scientific project";
+        case "match":
+            return "Match";
+        default:
+            return type;
+    }
+}
+
+const FAVORITE_GROUPS = [
+    "team",
+    "edition",
+    "competition-table",
+    "scientific-project",
+    "match",
+] as const;
+
+function getGroupLabel(type: (typeof FAVORITE_GROUPS)[number]): string {
+    return getFavoriteTypeLabel(type);
+}
+
 export default function FavoritesDropdown() {
     const { favorites, removeFavoriteById } = useFavorites();
     const [open, setOpen] = useState(false);
+    const favoritesByType = FAVORITE_GROUPS.map((type) => ({
+        type,
+        label: getGroupLabel(type),
+        items: favorites.filter((favorite) => favorite.type === type),
+    })).filter((group) => group.items.length > 0);
 
     useEffect(() => {
         function handleKeyDown(event: KeyboardEvent) {
@@ -69,37 +103,46 @@ export default function FavoritesDropdown() {
                                 No favorites yet.
                             </p>
                         ) : (
-                            <ul className="space-y-2">
-                                {favorites.map((favorite) => (
-                                    <li
-                                        key={`${favorite.type}:${favorite.id}`}
-                                        className="flex items-start justify-between gap-3 rounded-md border border-border bg-background px-3 py-2"
-                                    >
-                                        <div className="min-w-0">
-                                            <Link
-                                                href={favorite.href}
-                                                className="block truncate text-sm font-medium text-foreground hover:text-accent hover:underline"
-                                                onClick={() => setOpen(false)}
-                                            >
-                                                {favorite.label}
-                                            </Link>
-                                            <p className="text-xs text-muted-foreground">
-                                                {favorite.type.replace("-", " ")}
-                                                {favorite.secondaryLabel ? ` - ${favorite.secondaryLabel}` : ""}
-                                            </p>
-                                        </div>
+                            <div className="space-y-4">
+                                {favoritesByType.map((group) => (
+                                    <section key={group.type} className="space-y-2">
+                                        <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                                            {group.label}
+                                        </h3>
 
-                                        <button
-                                            type="button"
-                                            className="rounded-md p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
-                                            onClick={() => removeFavoriteById(favorite.type, favorite.id)}
-                                            aria-label={`Remove ${favorite.label} from favorites`}
-                                        >
-                                            <X className="h-4 w-4" />
-                                        </button>
-                                    </li>
+                                        <ul className="space-y-2">
+                                            {group.items.map((favorite) => (
+                                                <li
+                                                    key={`${favorite.type}:${favorite.id}`}
+                                                    className="flex items-start justify-between gap-3 rounded-md border border-border bg-background px-3 py-2"
+                                                >
+                                                    <div className="min-w-0">
+                                                        <Link
+                                                            href={favorite.href}
+                                                            className="block truncate text-sm font-medium text-foreground hover:text-accent hover:underline"
+                                                            onClick={() => setOpen(false)}
+                                                        >
+                                                            {favorite.label}
+                                                        </Link>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {favorite.secondaryLabel ? favorite.secondaryLabel : "Saved locally"}
+                                                        </p>
+                                                    </div>
+
+                                                    <button
+                                                        type="button"
+                                                        className="rounded-md p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
+                                                        onClick={() => removeFavoriteById(favorite.type, favorite.id)}
+                                                        aria-label={`Remove ${favorite.label} from favorites`}
+                                                    >
+                                                        <X className="h-4 w-4" />
+                                                    </button>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </section>
                                 ))}
-                            </ul>
+                            </div>
                         )}
                     </div>
                 </>
